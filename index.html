@@ -1,80 +1,165 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 引用 Tailwind CSS，一個輕量級的 CSS 框架 -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <title>RUNimg | 潤飛圖床 - 重新設計</title>
-    <!-- 將字體設置為 Inter 以獲得更現代的觀感 -->
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-    </style>
-</head>
-<body class="bg-slate-50 min-h-screen flex items-center justify-center">
-    <!-- 主容器，居中顯示內容 -->
-    <div class="bg-white p-8 md:p-12 rounded-xl shadow-2xl max-w-4xl w-full text-center">
-        <!-- 標題 -->
-        <h1 class="text-4xl md:text-5xl font-bold text-slate-800 mb-4 animate-fade-in">
-            RUNimg | 潤飛圖床
-        </h1>
-        <!-- 簡介 -->
-        <p class="text-xl md:text-2xl text-slate-600 mb-8 animate-fade-in delay-100">
-            歡迎來到全新的網站！
-        </p>
-        
-        <!-- 這是一個示例區塊，您可以在這裡添加自己的內容 -->
-        <div class="space-y-6">
-            <div class="p-6 bg-slate-100 rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold text-slate-700">上傳圖片</h3>
-                <p class="mt-2 text-slate-500">
-                    您可以在此處添加您的圖片上傳功能。
-                </p>
-            </div>
-            <div class="p-6 bg-slate-100 rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold text-slate-700">圖片庫</h3>
-                <p class="mt-2 text-slate-500">
-                    此處可以顯示您已上傳的所有圖片。
-                </p>
-            </div>
-        </div>
+import React, { useState } from 'react';
 
-        <!-- 自定義消息框，用於取代 alert() -->
-        <div id="message-box" class="fixed inset-x-0 bottom-4 flex justify-center z-50 pointer-events-none">
-            <div id="message-content" class="bg-indigo-600 text-white px-6 py-3 rounded-full shadow-lg opacity-0 transition-opacity duration-300 transform scale-95">
-                <!-- 消息內容將在此處顯示 -->
-            </div>
-        </div>
-    </div>
+// 主應用程式組件
+const App = () => {
+    // 狀態來儲存上傳的圖片列表
+    const [images, setImages] = useState([]);
+    // 狀態來控制拖放區域的視覺效果
+    const [isDragging, setIsDragging] = useState(false);
+    // 狀態來控制自定義通知的顯示
+    const [message, setMessage] = useState('');
 
-    <script>
-        /**
-         * @description 顯示自定義消息框的函式。
-         * @param {string} message - 要顯示的文本消息。
-         * @param {number} duration - 消息顯示的時間（毫秒）。
-         */
-        function showMessage(message, duration = 3000) {
-            const msgBox = document.getElementById('message-box');
-            const msgContent = document.getElementById('message-content');
+    /**
+     * @description 處理檔案上傳的函式，無論是透過點擊還是拖放。
+     * @param {FileList} files - 包含上傳檔案的 FileList 物件。
+     */
+    const handleFiles = (files) => {
+        if (files.length === 0) return;
+
+        const newImages = [...images];
+        for (const file of files) {
+            // 檢查檔案類型，只接受圖片
+            if (!file.type.startsWith('image/')) {
+                showToast('只支援圖片檔案！', 'bg-red-500');
+                continue;
+            }
             
-            // 設置消息內容和樣式
-            msgContent.textContent = message;
-            msgContent.classList.remove('opacity-0', 'scale-95');
-            msgContent.classList.add('opacity-100', 'scale-100');
-            
-            // 在指定時間後隱藏消息框
-            setTimeout(() => {
-                msgContent.classList.remove('opacity-100', 'scale-100');
-                msgContent.classList.add('opacity-0', 'scale-95');
-            }, duration);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                newImages.push({
+                    src: e.target.result,
+                    name: file.name
+                });
+                setImages([...newImages]);
+            };
+            reader.readAsDataURL(file);
         }
-        
-        // 示例：在頁面加載後顯示一條歡迎消息
-        window.onload = () => {
-            showMessage('歡迎使用新的 RUNimg 網站！', 4000);
-        };
-    </script>
-</body>
-</html>
+        showToast(`已成功上傳 ${files.length} 個檔案`, 'bg-green-500');
+    };
+
+    /**
+     * @description 處理拖曳檔案進入區域的事件。
+     * @param {DragEvent} e - 拖曳事件。
+     */
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    /**
+     * @description 處理拖曳檔案離開區域的事件。
+     * @param {DragEvent} e - 拖曳事件。
+     */
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+    };
+
+    /**
+     * @description 處理在拖曳區域放下檔案的事件。
+     * @param {DragEvent} e - 拖曳事件。
+     */
+    const handleDrop = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+        const files = e.dataTransfer.files;
+        handleFiles(files);
+    };
+
+    /**
+     * @description 處理點擊上傳按鈕的事件。
+     * @param {Event} e - 點擊事件。
+     */
+    const handleInputChange = (e) => {
+        const files = e.target.files;
+        handleFiles(files);
+    };
+
+    /**
+     * @description 顯示自定義通知訊息的函式，用於替代瀏覽器的 alert()。
+     * @param {string} text - 要顯示的文字。
+     * @param {string} color - Tailwind CSS 背景顏色類別。
+     */
+    const showToast = (text, color) => {
+        setMessage({ text, color });
+        setTimeout(() => {
+            setMessage('');
+        }, 3000); // 3秒後自動隱藏
+    };
+
+    return (
+        <div className="min-h-screen bg-slate-100 flex flex-col items-center py-12 px-4">
+            {/* 網站標題 */}
+            <header className="mb-12 text-center">
+                <h1 className="text-5xl font-extrabold text-slate-900 mb-2">RUNimg | 潤飛圖床</h1>
+                <p className="text-xl text-slate-600">免費圖床，基於 Tailwind CSS 的現代圖片上傳工具</p>
+            </header>
+
+            {/* 圖片上傳區塊 */}
+            <div
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`relative w-full max-w-2xl border-4 border-dashed rounded-3xl p-12 text-center transition-all duration-300
+                    ${isDragging ? 'border-indigo-500 bg-indigo-50' : 'border-slate-300 bg-white hover:border-indigo-400'}`}
+            >
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <div className="relative z-10">
+                    <p className="text-2xl font-semibold text-slate-700 mb-2">拖曳圖片到此處</p>
+                    <p className="text-slate-500 mb-4">或</p>
+                    <label
+                        htmlFor="file-upload"
+                        className="cursor-pointer inline-block px-8 py-3 bg-indigo-600 text-white font-bold text-lg rounded-full shadow-lg transition-all duration-200 hover:bg-indigo-700 hover:shadow-xl"
+                    >
+                        選擇檔案
+                    </label>
+                    <input
+                        id="file-upload"
+                        type="file"
+                        multiple
+                        className="hidden"
+                        onChange={handleInputChange}
+                        accept="image/*"
+                    />
+                </div>
+            </div>
+
+            {/* 圖片庫區塊 */}
+            {images.length > 0 && (
+                <div className="mt-12 w-full max-w-4xl">
+                    <h2 className="text-3xl font-bold text-slate-800 mb-6">我的圖片庫</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {images.map((image, index) => (
+                            <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105">
+                                <img
+                                    src={image.src}
+                                    alt={image.name}
+                                    className="w-full h-48 object-cover"
+                                />
+                                <div className="p-4">
+                                    <p className="text-sm text-slate-600 truncate">{image.name}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* 自定義通知訊息 */}
+            {message && (
+                <div
+                    className={`fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-white shadow-lg transition-all duration-300
+                    ${message.color} animate-fade-in-up`}
+                >
+                    {message.text}
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default App;
