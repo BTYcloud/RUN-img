@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 引用 Tailwind CSS，一個輕量級的 CSS 框架 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>RUNimg | 潤飛圖床 - 重新設計</title>
+    <!-- 將字體設置為 Inter 以獲得更現代的觀感 -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center">
+    <!-- 主容器，居中顯示內容 -->
+    <div class="bg-white p-8 md:p-12 rounded-xl shadow-2xl max-w-4xl w-full text-center">
+        <!-- 標題 -->
+        <h1 class="text-4xl md:text-5xl font-bold text-slate-800 mb-4 animate-fade-in">
+            RUNimg | 潤飛圖床
+        </h1>
+        <!-- 簡介 -->
+        <p class="text-xl md:text-2xl text-slate-600 mb-8 animate-fade-in delay-100">
+            歡迎來到全新的網站！
+        </p>
+        
+        <!-- 這是一個示例區塊，您可以在這裡添加自己的內容 -->
+        <div class="space-y-6">
+            <div class="p-6 bg-slate-100 rounded-lg shadow-md">
+                <h3 class="text-2xl font-semibold text-slate-700">上傳圖片</h3>
+                <p class="mt-2 text-slate-500">
+                    您可以在此處添加您的圖片上傳功能。
+                </p>
+            </div>
+            <div class="p-6 bg-slate-100 rounded-lg shadow-md">
+                <h3 class="text-2xl font-semibold text-slate-700">圖片庫</h3>
+                <p class="mt-2 text-slate-500">
+                    此處可以顯示您已上傳的所有圖片。
+                </p>
+            </div>
+        </div>
+
+        <!-- 自定義消息框，用於取代 alert() -->
+        <div id="message-box" class="fixed inset-x-0 bottom-4 flex justify-center z-50 pointer-events-none">
+            <div id="message-content" class="bg-indigo-600 text-white px-6 py-3 rounded-full shadow-lg opacity-0 transition-opacity duration-300 transform scale-95">
+                <!-- 消息內容將在此處顯示 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * @description 顯示自定義消息框的函式。
+         * @param {string} message - 要顯示的文本消息。
+         * @param {number} duration - 消息顯示的時間（毫秒）。
+         */
+        function showMessage(message, duration = 3000) {
+            const msgBox = document.getElementById('message-box');
+            const msgContent = document.getElementById('message-content');
+            
+            // 設置消息內容和樣式
+            msgContent.textContent = message;
+            msgContent.classList.remove('opacity-0', 'scale-95');
+            msgContent.classList.add('opacity-100', 'scale-100');
+            
+            // 在指定時間後隱藏消息框
+            setTimeout(() => {
+                msgContent.classList.remove('opacity-100', 'scale-100');
+                msgContent.classList.add('opacity-0', 'scale-95');
+            }, duration);
+        }
+        
+        // 示例：在頁面加載後顯示一條歡迎消息
+        window.onload = () => {
+            showMessage('歡迎使用新的 RUNimg 網站！', 4000);
+        };
+    </script>
+</body>
+</html>
